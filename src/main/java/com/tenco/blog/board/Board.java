@@ -2,7 +2,7 @@ package com.tenco.blog.board;
 
 import com.tenco.blog._core.errors.Exception403;
 import com.tenco.blog.user.User;
-import com.tenco.blog.util.MyDateUtil;
+import com.tenco.blog._core.util.MyDateUtil;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,4 +1,4 @@
-package com.tenco.blog.util;
+package com.tenco.blog._core.util;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
 

@@ -3,6 +3,11 @@ server:
     encoding:
       charset: utf-8
       force: true
+    #파일 업로드 설정
+    multipart:
+      enabled: true #파일 업로드 활성화
+      max-file-size: 50MB #단일 파일 최대 크기 설정 (1MB)
+      max-request-size: 100MB # 전체 요청(Request) 최대 크기 설정
   port: 8080
 
 logging:
@@ -36,7 +41,8 @@ spring:
   # SQL 초기화 설정
   sql:
     init:
-      mode: always  # 외부 DB(MySQL)에서도 실행되도록 설정
+      #mode: always  # 외부 DB(MySQL)에서도 실행되도록 설정
+      mode: never # 절대 실행 안됨
       data-locations:
         - classpath:db/data.sql
 
@@ -49,7 +55,7 @@ spring:
     hibernate:
       # create 애플리케이션 시작시 테이블 새로 생성
       # 기존 데이터는 모드 삭제됨 (개발용)
-      ddl-auto: create
+      ddl-auto: update
     #SQL 쿼리를 콘솔에 출력 (개발용)
     show-sql: true
     properties:

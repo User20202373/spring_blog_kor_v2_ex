@@ -1,7 +1,6 @@
 package com.tenco.blog.board;
 
-import com.tenco.blog.user.User;
-import com.tenco.blog.util.MyDateUtil;
+import com.tenco.blog._core.util.MyDateUtil;
 import lombok.Data;
 import org.springframework.data.domain.Page;
 

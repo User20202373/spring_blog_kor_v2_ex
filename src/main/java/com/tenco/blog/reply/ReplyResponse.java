@@ -1,6 +1,6 @@
 package com.tenco.blog.reply;
 
-import com.tenco.blog.util.MyDateUtil;
+import com.tenco.blog._core.util.MyDateUtil;
 import lombok.Data;
 
 public class ReplyResponse {
