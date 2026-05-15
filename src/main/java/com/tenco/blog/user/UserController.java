@@ -1,17 +1,24 @@
 package com.tenco.blog.user;
 
 import com.tenco.blog._core.util.Define;
-import com.tenco.blog._core.util.FileUtil;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Controller // IoC
@@ -33,6 +40,86 @@ public class UserController {
     public void init() {
         log.info("현재 적용된 클라이언트 아이디 확인 :  " + kakaoClientId);
         log.info("현재 적용된 클라이언트 시크릿 확인 :  " + kakaoClientSecret);
+    }
+
+
+    // 1. 인가 코드 받음 -> 2. 토근 발급 요청(JWT - CSR)
+    @GetMapping("/kakao-redirect")
+    public String kakaoCallback(@RequestParam(name = "code") String code, HttpSession session) {
+        System.out.println("카카오 리다이렉트 값 확인");
+
+        RestTemplate restTemplate1 = new RestTemplate();
+
+        // 헤더
+        HttpHeaders headers1 = new HttpHeaders();
+        headers1.add("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
+
+        // 바디
+        // 1. 방식 - application/json
+        // 2. 방식  - application/json/x=www-form-urlencoded;
+        //{key=value,key-value, key = value} -> LinkedMultiValueMap -> 장점 -> URLEncoding을 알아서 해준다
+        LinkedMultiValueMap<String, String> multiValueMap = new LinkedMultiValueMap<>();
+        multiValueMap.add("grant_type", "authorization_code");
+        multiValueMap.add("client_id", kakaoClientId);
+        multiValueMap.add("redirect_uri", "http://localhost:8080/kakao-redirect");
+        multiValueMap.add("code", code);
+        // 최신 사항: 반드시 시크릿키 body에 설정
+        multiValueMap.add("client_secret", kakaoClientSecret);
+
+
+        // 순서 중요 바디+헤더 결합(HTTP 요청 메세지 구축)
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(multiValueMap, headers1);
+
+        // HTTP 요청 후 응답
+        ResponseEntity<UserResponse.OAuthToken> response1 = restTemplate1.exchange("https://kauth.kakao.com/oauth/token",
+                HttpMethod.POST,
+                request,
+                UserResponse.OAuthToken.class
+        );
+
+        /// ///////////////////////////////////////////////////////
+        // 발급 받은 액세스 토큰으로 해당 사용자의 정보 요청
+        String accessToken = response1.getBody().getAccessToken();
+        RestTemplate restTemplate2 = new RestTemplate();
+
+        HttpHeaders headers2 = new HttpHeaders();
+        //주의! 반드시 Bearer + "공백한칸" + 토큰
+        headers2.add("Authorization", "Bearer " + accessToken);
+        headers2.add("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
+
+        HttpEntity request2 = new HttpEntity(headers2);
+
+        // HTTP  요청 2
+        ResponseEntity<UserResponse.KakaoProfile> response2 = restTemplate2.exchange("https://kapi.kakao.com/v2/user/me",
+                HttpMethod.POST,
+                request2,
+                UserResponse.KakaoProfile.class
+        );
+
+
+        // 소셜 로그인 설계 방식
+        // 1. 최초 사영자라면 우리 서버에 회원 가입 처리
+        // 2. 회원 가입이 되어 있는 소셜 로그인 사용자라면 바로 로그인 처리
+
+
+        // 소셜 가입자 닉네임 형태 결정 난수_최원종
+        UserResponse.KakaoProfile.KakaoAccount.Profile profile = response2.getBody().getKakaoAccount().getProfile();
+        String username = profile.getNickname() + "_" + response2.getBody().getId();
+        User userEntity = userService.사용자이름조회(username);
+
+        if (userEntity == null) {
+            // 최초 사용자시 회원 자동 가입
+            UserRequest.JoinDTO joinDTO = new UserRequest.JoinDTO();
+            joinDTO.setUsername(username);
+            joinDTO.setEmail(null);
+            joinDTO.setPassword("aaaa");
+            //joinDTO.setProfileImage();
+            userEntity = userService.회원가입(joinDTO);
+            userEntity.setProfileImage(profile.getProfileImageUrl());
+        }
+        // 세션 정보 저장
+        session.setAttribute(Define.SESSION_USER, userEntity);
+        return "redirect:/board/list";
     }
 
 

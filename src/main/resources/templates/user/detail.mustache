@@ -31,7 +31,10 @@
 
             <div class="mb-3">
                 <label class="form-label fw-bold">이메일</label>
-                <p class="form-control-plaintext">{{user.email}}</p>
+                {{#user.email}}
+                    <p class="form-control-plaintext">{{user.email}}</p>
+                {{/user.email}}
+
             </div>
 
             <div class="mb-3">

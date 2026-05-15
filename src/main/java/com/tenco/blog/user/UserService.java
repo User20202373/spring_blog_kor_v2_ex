@@ -131,7 +131,7 @@ public class UserService {
             }
         }
         // 더티 체킹 활용
-        userEntity.update(updateDTO,uuidImageFileName);
+        userEntity.update(updateDTO, uuidImageFileName);
         return userEntity;
     }
 
@@ -157,6 +157,11 @@ public class UserService {
         // 1차 캐쉬에 저장된 User 정보 수정 - 트랜잭션이 종료되면 반영(더티 체킹)
         userEntity.setProfileImage(null);
         return userEntity;
+
+    }
+
+    public User 사용자이름조회(String username) {
+        return   userRepository.findByUsername(username).orElse(null);
 
     }
 }

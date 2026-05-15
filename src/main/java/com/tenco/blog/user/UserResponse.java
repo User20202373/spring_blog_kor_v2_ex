@@ -1,28 +1,54 @@
 package com.tenco.blog.user;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 public class UserResponse {
 
-//    @Data
-//    public static class JoinDTO {
-//        private Integer id;
-//        private String username;
-//        private String email;
-//
-//        public JoinDTO(User user) {
-//            this.id = user.getId();
-//            this.username = user.getUsername();
-//            this.email = user.getEmail();
-//        }
-//    } // end of JoinDTO inner class
-//
-//    @Data
-//    public static class SessionDTO extends User {
-//        // password 처럼 민감한 정보는 내려주지 않는다.
-//        public SessionDTO(User user) {
-//            super.setId(user.getId());
-//            super.setUsername(user.getUsername());
-//            super.setEmail(user.getEmail());
-//        }
-//    } // end of LoginDTO inner class
+    /**
+     * 액세스 토큰 응답 정보
+     */
+    @Data
+    @NoArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class OAuthToken {
+        private String accessToken;
+        private String tokenType;
+        private String refreshToken;
+        private Integer expiresIn;
+        private String scope;
+        private Integer refreshTokenExpiresIn;
+    }
 
-} // end of outer class
+    /**
+     * 카카오 사용자 정보 응답
+     */
+    @Data
+    @NoArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class KakaoProfile {
+        private Long id;
+        private KakaoAccount kakaoAccount;
+
+
+        @Data
+        @NoArgsConstructor
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+        public static class KakaoAccount {
+            private Profile profile;
+
+            @Data
+            @NoArgsConstructor
+            @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+            public static class Profile {
+                private String nickname;
+                private String thumbnailImageUrl;
+                private String profileImageUrl;
+                private Boolean isDefaultImage;
+                private Boolean isDefaultNickname;
+            }
+        }
+    }
+}
