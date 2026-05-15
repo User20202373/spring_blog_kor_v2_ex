@@ -1,5 +1,6 @@
 package com.tenco.blog._core.config;
 
+import com.tenco.blog._core.interceptor.AdminInterceptor;
 import com.tenco.blog._core.interceptor.LoginInterceptor;
 import com.tenco.blog._core.interceptor.SessionInterceptor;
 import com.tenco.blog._core.util.FileUtil;
@@ -22,6 +23,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
     private LoginInterceptor loginInterceptor;
     @Autowired // DI 처리
     private SessionInterceptor sessionInterceptor;
+    @Autowired
+    private AdminInterceptor adminInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -33,7 +36,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
         // 인증 처리 인터셉터 동작 함
         registry.addInterceptor(loginInterceptor)
-                .addPathPatterns("/board/**", "/user/**", "/reply/**")
+                .addPathPatterns("/board/**", "/user/**", "/reply/**","/admin/**")
                 .excludePathPatterns(
                         // 로그인 관련(인증이 필요 없는 페이지)
                         "/login-form",  // 로그인 화면 요청 시
@@ -55,6 +58,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         // H2 데이터베시스 콘솔( 개발 환경용)
                         "/h2-console/**"    // H2 콘솔 접근
                 );
+
+        // 관리자 페이지 요청이 들어왔을 때 1단계 로그인 여부 확인, 2단계 Role 확인해서
+        // ADMIN일 경우만 관리자 페이지로 이동 가능하게 처리
+        registry.addInterceptor(adminInterceptor).addPathPatterns("/admin/**");
     }
 
     // 정적 리소스 핸들러 설정

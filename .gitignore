@@ -97,3 +97,6 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# .env 제외 처리
+.env

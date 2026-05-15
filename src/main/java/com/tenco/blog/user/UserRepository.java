@@ -25,21 +25,30 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     // 사용자명으로 사용자 조회(중복 체크 확인 용)
     @Query("""
-        SELECT u FROM User u WHERE u.username = :username
-    """)
+                SELECT u FROM User u WHERE u.username = :username
+            """)
     Optional<User> findByUsername(@Param("username") String username);
 
     // 사용자명과 비밀번호로 사용자 조회(로그인용)
     @Query("""
-        SELECT u FROM User u WHERE u.username = :username AND u.password = :password 
-    """)
+                SELECT u FROM User u WHERE u.username = :username AND u.password = :password 
+            """)
     Optional<User> findByUsernameAndPassword(@Param("username") String username,
-                                             @Param("password")  String password);
+                                             @Param("password") String password);
 
     // 사용자 정보 수정
     // [더티 체킹이란?]
     // 트랜잭션 내에서 조회된 객체상태를 변경하면
     // 트랜잭션이 끝나는 시점에 JPA가 변경된 내용을 자동으로 감시하여
     // DB에 UPDATE 쿼리를ㄹ 날려주는 기능을 말한다.
+
+    // 사용자명과 비밀번호로 사용자 조회(로그인용) + Role 정보 한번에 조회
+    @Query("""
+                SELECT DISTINCT u FROM User u
+                LEFT JOIN FETCH u.roles r
+                WHERE u.username = :username AND u.password = :password
+            """)
+    Optional<User> findByUsernameAndPasswordWithRoles(@Param("username") String username,
+                                             @Param("password") String password);
 
 }

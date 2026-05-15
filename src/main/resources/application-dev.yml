@@ -41,8 +41,8 @@ spring:
   # SQL 초기화 설정
   sql:
     init:
-      #mode: always  # 외부 DB(MySQL)에서도 실행되도록 설정
-      mode: never # 절대 실행 안됨
+      mode: always  # 외부 DB(MySQL)에서도 실행되도록 설정
+      #mode: never # 절대 실행 안됨
       data-locations:
         - classpath:db/data.sql
 
@@ -55,7 +55,7 @@ spring:
     hibernate:
       # create 애플리케이션 시작시 테이블 새로 생성
       # 기존 데이터는 모드 삭제됨 (개발용)
-      ddl-auto: update
+      ddl-auto: create
     #SQL 쿼리를 콘솔에 출력 (개발용)
     show-sql: true
     properties:
