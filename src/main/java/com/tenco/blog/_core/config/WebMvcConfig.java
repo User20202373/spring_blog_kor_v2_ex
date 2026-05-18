@@ -80,9 +80,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .addResourceLocations("file:"+externalPath);
     }
 
-    @Bean //IoC
+    @Bean // IoC
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
+
     }
 }
 

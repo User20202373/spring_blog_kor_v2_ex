@@ -18,12 +18,8 @@ repositories {
 }
 
 dependencies {
-	// ... 기존 의존성 ...
-
 	// 암호화
 	implementation 'org.springframework.security:spring-security-crypto'
-
-	// ... 기존 의존성 ...
 
 	// Source: https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
 	implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.18.0'

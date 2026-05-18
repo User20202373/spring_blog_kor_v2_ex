@@ -37,39 +37,40 @@ public class UserService {
     @Transactional
     public User 회원가입(UserRequest.JoinDTO joinDTO) {
         log.info("회원가입 서비스 시작");
+        // 회원 가입시 중복 체크
+       userRepository.findByUsername(joinDTO.getUsername()).ifPresent(
+               user ->{
+                   throw new Exception400("이미 존재하는 사용자입니다");
+               });
 
-        userRepository.findByUsername(joinDTO.getUsername()).ifPresent(user -> {
-            log.warn("회원가입 실패 - 중복된 사용자명 : {}", user.getUsername());
-            throw new Exception400("이미 존재하는 사용자 이름입니다");
-        });
-        // 프로필 이미지 저장 기능 구현(선택사항)
+       // 프로필 이미지 저장 구현
         String profileImageFilename = null;
-        if (joinDTO.getProfileImage() != null && joinDTO.getProfileImage().isEmpty() == false) {
-            // 이미지 파일 맞는지 검증
-
+        //프로필 이미지가 비어있지 않을 때
+        if (joinDTO.getProfileImage() != null && !joinDTO.getProfileImage().isEmpty()){
             try {
-                if (FileUtil.isImageFile(joinDTO.getProfileImage()) == false) {
-                    throw new Exception400("이미지 파일만 업로드 가능합니다");
+                // 이미지 파일이아닐 때
+                if (!FileUtil.isImageFile(joinDTO.getProfileImage())){
+                    throw new Exception400("이미지파일만 업로드 가능합니다");
                 }
+                //이미지 파일일 때 저장하는 기능
                 profileImageFilename = FileUtil.saveFile(joinDTO.getProfileImage(), FileUtil.IMAGES_DIR);
-            } catch (Exception e) {
-                // 디스크 공간이 없거나 ,권한 없음
+            } catch (IOException e) {
+                // 디스크 공간 없거나, 권한 없음
                 throw new Exception500("프로필 이미지 저장 실패");
             }
-
         }
 
-        // 코드 수정
+        //비밀번호 암호화 기능 추가
         User user = joinDTO.toEntity(profileImageFilename);
         String hashPwd = passwordEncoder.encode(joinDTO.getPassword());
-        System.out.println("rawPwd : " + joinDTO.getPassword());
-        System.out.println("hashPwd : " + hashPwd);
-        user.setPassword(hashPwd);
+        System.out.println("기존비번: " +joinDTO.getPassword());
+        System.out.println("해쉬처리한 비번: "+hashPwd);
 
+        // 해쉬 처리한 비번 user에 넣기
+        user.setPassword(hashPwd);
 
         // 기본 권한 추가 (일반 사용자로 설정)
         user.addRole(Role.USER);
-        user.setOAuthProvider(OAuthProvider.LOCAL);
 
         return userRepository.save(user);
     }
@@ -108,7 +109,7 @@ public class UserService {
 
         // 코드 수정
         User user = joinDTO.toEntity(profileImageUrl);
-        String hashPwd = passwordEncoder.encode("1234");
+        String hashPwd = passwordEncoder.encode(joinDTO.getPassword());
         System.out.println("rawPwd : " + joinDTO.getPassword());
         System.out.println("hashPwd : " + hashPwd);
         user.setPassword(hashPwd);
@@ -130,20 +131,16 @@ public class UserService {
      * @return User(조회된 정보 세션 저장용)
      */
     public User 로그인(UserRequest.LoginDTO loginDTO) {
-        log.info("로그인 서비스 시작");
         // 1. 사용자 계정 여부 확인
         User userEntity = userRepository.findByUsernameAndWithRoles(loginDTO.getUsername())
-                .orElseThrow(() -> {
-                    log.warn("로그인 실패 - 사용자 이름 또는 사용자 비번 잘못 입력");
+                .orElseThrow(() ->{
                     return new Exception400("사용자명 또는 비밀번호가 올바르지 않습니다");
                 });
 
         // 2. 암호화 된 비밀번호 검증
-        if (!passwordEncoder.matches(loginDTO.getPassword(), userEntity.getPassword())) {
-            throw new Exception400("사용자명 또는 비밀번호가 올바르지 않습니다");
+        if (!passwordEncoder.matches(loginDTO.getPassword(), userEntity.getPassword())){
+            throw new Exception400(" 사용자명 또는 비밀번호가 올바르지 않습니다");
         }
-        ; // matches는 두 값이 같은(true)인지 판단함
-
 
         return userEntity;
     }

@@ -64,9 +64,14 @@ public class User {
     @JoinColumn(name = "user_id")
     private List<UserRole> roles = new ArrayList<>();
 
-    @Enumerated(EnumType.STRING) // db랑 java랑 다르기 때문에 db에서 STRING 타입으로 관리하라고 선언
-    @Column(nullable = false) //null 허용 안함
-    @ColumnDefault("'LOCAL'") // 어노테이션으로 디폴트값 선언 방법 (문자열일 경우 ' ' 반드시 사용)
+//    @Enumerated(EnumType.STRING) // db랑 java랑 다르기 때문에 db에서 STRING 타입으로 관리하라고 선언
+//    @Column(nullable = false) //null 허용 안함
+//    @ColumnDefault("'LOCAL'") // 어노테이션으로 디폴트값 선언 방법 (문자열일 경우 ' ' 반드시 사용)
+//    private OAuthProvider oAuthProvider;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @ColumnDefault("'LOCAL'")
     private OAuthProvider oAuthProvider;
 
     @Builder
@@ -92,18 +97,6 @@ public class User {
 
 
     }
-
-//    // 편의 기능 추가 - 회원 정보 수정
-//    public void update(UserRequest.UpdateDTO updateDTO, String newProfileImageFileName) {
-//        this.password = updateDTO.getPassword();
-//        this.profileImage = newProfileImageFileName;
-//        // Dirty Checking 처리
-//    }
-//
-//    // 패스워드 변경 시
-//    public void update(UserRequest.UpdateDTO updateDTO) {
-//        this.password = updateDTO.getPassword();
-//    }
 
     // User 엔티티에 권한 관련 편의 기능 만들어 보기
 

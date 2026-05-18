@@ -117,7 +117,7 @@ public class UserController {
             UserRequest.JoinDTO joinDTO = new UserRequest.JoinDTO();
             joinDTO.setUsername(username);
             joinDTO.setEmail(null);
-            joinDTO.setPassword("1234");
+            joinDTO.setPassword(tencoKey);
             //joinDTO.setProfileImage();
             userEntity = userService.소셜회원가입(joinDTO, profile.getProfileImageUrl());
             userEntity.setProfileImage(profile.getProfileImageUrl());
