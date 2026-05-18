@@ -7,6 +7,7 @@ import com.tenco.blog._core.errors.Exception500;
 import com.tenco.blog._core.util.FileUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,9 @@ import java.io.IOException;
 public class UserService {
 
     private final UserRepository userRepository;
+
+    //암호화 기능 DI
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * 회원 가입 처리
@@ -55,10 +59,67 @@ public class UserService {
 
         }
 
+        // 코드 수정
         User user = joinDTO.toEntity(profileImageFilename);
+        String hashPwd = passwordEncoder.encode(joinDTO.getPassword());
+        System.out.println("rawPwd : " + joinDTO.getPassword());
+        System.out.println("hashPwd : " + hashPwd);
+        user.setPassword(hashPwd);
+
 
         // 기본 권한 추가 (일반 사용자로 설정)
         user.addRole(Role.USER);
+        user.setOAuthProvider(OAuthProvider.LOCAL);
+
+
+        return userRepository.save(user);
+    }
+
+    /**
+     * 소셜 회원 가입 처리
+     *
+     * @param joinDTO (사용자 회원가입 요청 정보)
+     * @return User (저장된 사용자 정보)
+     */
+    @Transactional
+    public User 소셜회원가입(UserRequest.JoinDTO joinDTO,String profileImageUrl) {
+        log.info("소셜회원가입 서비스 시작");
+
+        userRepository.findByUsername(joinDTO.getUsername()).ifPresent(user -> {
+            log.warn("소셜회원가입 실패 - 중복된 사용자명 : {}", user.getUsername());
+            throw new Exception400("이미 존재하는 사용자 이름입니다");
+        });
+
+        // 프로필 이미지 저장 기능 구현(선택사항)
+        String profileImageFilename = null;
+        if (joinDTO.getProfileImage() != null && joinDTO.getProfileImage().isEmpty() == false) {
+            // 이미지 파일 맞는지 검증
+
+            try {
+                if (FileUtil.isImageFile(joinDTO.getProfileImage()) == false) {
+                    throw new Exception400("이미지 파일만 업로드 가능합니다");
+                }
+                profileImageFilename = FileUtil.saveFile(joinDTO.getProfileImage(), FileUtil.IMAGES_DIR);
+            } catch (Exception e) {
+                // 디스크 공간이 없거나 ,권한 없음
+                throw new Exception500("프로필 이미지 저장 실패");
+            }
+
+        }
+
+        // 코드 수정
+        User user = joinDTO.toEntity(profileImageUrl);
+        String hashPwd = passwordEncoder.encode("1234");
+        System.out.println("rawPwd : " + joinDTO.getPassword());
+        System.out.println("hashPwd : " + hashPwd);
+        user.setPassword(hashPwd);
+
+
+        // 기본 권한 추가 (일반 사용자로 설정)
+        user.addRole(Role.USER);
+
+            user.setOAuthProvider(OAuthProvider.KAKAO);
+
         return userRepository.save(user);
     }
 
@@ -71,11 +132,18 @@ public class UserService {
      */
     public User 로그인(UserRequest.LoginDTO loginDTO) {
         log.info("로그인 서비스 시작");
-        User userEntity = userRepository.findByUsernameAndPasswordWithRoles(loginDTO.getUsername(), loginDTO.getPassword())
+        // 1. 사용자 계정 여부 확인
+        User userEntity = userRepository.findByUsernameAndWithRoles(loginDTO.getUsername())
                 .orElseThrow(() -> {
                     log.warn("로그인 실패 - 사용자 이름 또는 사용자 비번 잘못 입력");
                     return new Exception400("사용자명 또는 비밀번호가 올바르지 않습니다");
                 });
+
+        // 2. 암호화 된 비밀번호 검증
+       if (!passwordEncoder.matches(loginDTO.getPassword(), userEntity.getPassword())){
+            throw new Exception400("사용자명 또는 비밀번호가 올바르지 않습니다");
+        }; // matches는 두 값이 같은(true)인지 판단함
+
 
         return userEntity;
     }
@@ -161,7 +229,7 @@ public class UserService {
     }
 
     public User 사용자이름조회(String username) {
-        return   userRepository.findByUsername(username).orElse(null);
+        return userRepository.findByUsername(username).orElse(null);
 
     }
 }

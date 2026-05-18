@@ -6,14 +6,19 @@
             <!--  프로필 이미지  start  -->
             <div class="text-center mb-4">
                 {{#user.profileImage}}
-                    <img class="rounded-circle" src="/images/{{user.profileImage}}" alt="프로필이미지"
-                         style="width:200px; height:200px;"/>
-                    <div class="mt-2">
-                        <form action="/user/profile-image/delete" method="post">
-                            <button type="submit" class="btn btn-sm btn-danger"
-                                    onclick="return confirm('프로필 사진을 삭제할까요?')">프로필 사진 삭제</button>
-                        </form>
-                    </div>
+                    <!--  회원 가입시 로컬 가입자                   -->
+                    <img class="rounded-circle" src="{{user.profilePath}}" alt="프로필이미지"
+                         style="width:200px; height:200px"/>
+
+                    {{#user.local}}
+                        <div class="mt-2">
+                            <form action="/user/profile-image/delete" method="post">
+                                <button type="submit" class="btn btn-sm btn-danger"
+                                        onclick="return confirm('프로필 사진을 삭제할까요?')">프로필 사진 삭제</button>
+                            </form>
+                        </div>
+                    {{/user.local}}
+
                 {{/user.profileImage}}
                 {{^user.profileImage}}
                     <div class="rounded-circle bg-secondary d-inline-flex
@@ -34,7 +39,6 @@
                 {{#user.email}}
                     <p class="form-control-plaintext">{{user.email}}</p>
                 {{/user.email}}
-
             </div>
 
             <div class="mb-3">

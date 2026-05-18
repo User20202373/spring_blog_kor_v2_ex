@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "user_role_tb",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_user_role", columnNames = {"user_id,", "role"})
+                @UniqueConstraint(name = "uk_user_role", columnNames = {"user_id", "role"})
         })
 public class UserRole {
 

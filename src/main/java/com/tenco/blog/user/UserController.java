@@ -35,11 +35,15 @@ public class UserController {
     @Value("${oauth.kakao.client-secret}")
     private String kakaoClientSecret;
 
+    @Value("${tenco.key}")
+    private String tencoKey;
+
     // 테스트용 <-- 서버가 실행되면 한 번 이 메서드 호출해
     @PostConstruct
     public void init() {
         log.info("현재 적용된 클라이언트 아이디 확인 :  " + kakaoClientId);
         log.info("현재 적용된 클라이언트 시크릿 확인 :  " + kakaoClientSecret);
+        log.info("현재 적용된 텐코 키 시크릿 확인 :  " + tencoKey);
     }
 
 
@@ -112,10 +116,11 @@ public class UserController {
             UserRequest.JoinDTO joinDTO = new UserRequest.JoinDTO();
             joinDTO.setUsername(username);
             joinDTO.setEmail(null);
-            joinDTO.setPassword("aaaa");
+            joinDTO.setPassword("1234");
             //joinDTO.setProfileImage();
-            userEntity = userService.회원가입(joinDTO);
+            userEntity = userService.소셜회원가입(joinDTO, profile.getProfileImageUrl());
             userEntity.setProfileImage(profile.getProfileImageUrl());
+
         }
         // 세션 정보 저장
         session.setAttribute(Define.SESSION_USER, userEntity);

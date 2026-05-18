@@ -6,7 +6,10 @@ import com.tenco.blog._core.interceptor.SessionInterceptor;
 import com.tenco.blog._core.util.FileUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -75,6 +78,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 // 추후 C:upload/
                 // C:\\upload
                 .addResourceLocations("file:"+externalPath);
+    }
+
+    @Bean //IoC
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
     }
 }
 

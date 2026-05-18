@@ -1,10 +1,12 @@
--- User 테이블 데이터 (5명의 사용자)
-INSERT INTO user_tb (username, password, email, created_at)
-VALUES ('admin', '1234', 'admin@blog.com', NOW()),
-       ('ssar', '1234', 'ssar@nate.com', NOW()),
-       ('cos', '1234', 'cos@gmail.com', NOW()),
-       ('hong', '1234', 'hong@naver.com', NOW()),
-       ('kim', '1234', 'kim@daum.net', NOW());
+-- User 테이블 데이터 (비밀번호 '1234'를 BCrypt 암호화 처리)
+INSERT INTO user_tb (username, password, email, created_at) VALUES
+                                                                ('admin', '$2a$10$P/7pu5bD0qMvw2ozkhXIzu1Jqa53LNa5zlsLBot3tr0/CUUapQypK', 'admin@blog.com', NOW()),
+                                                                ('ssar',  '$2a$10$P/7pu5bD0qMvw2ozkhXIzu1Jqa53LNa5zlsLBot3tr0/CUUapQypK', 'ssar@nate.com',  NOW()),
+                                                                ('cos',   '$2a$10$P/7pu5bD0qMvw2ozkhXIzu1Jqa53LNa5zlsLBot3tr0/CUUapQypK', 'cos@gmail.com',  NOW()),
+                                                                ('hong',  '$2a$10$P/7pu5bD0qMvw2ozkhXIzu1Jqa53LNa5zlsLBot3tr0/CUUapQypK', 'hong@naver.com', NOW()),
+                                                                ('kim',   '$2a$10$P/7pu5bD0qMvw2ozkhXIzu1Jqa53LNa5zlsLBot3tr0/CUUapQypK', 'kim@daum.net',   NOW());
+
+-- 아래 연관 데이터(user_role_tb, board_tb, reply_tb)는 기존과 완전히 동일하므로 생략합니다.
 
 insert into user_role_tb(role, user_id)
     value('ADMIN',1),('USER',1),

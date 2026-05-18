@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
@@ -63,6 +64,11 @@ public class User {
     @JoinColumn(name = "user_id")
     private List<UserRole> roles = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING) // db랑 java랑 다르기 때문에 db에서 STRING 타입으로 관리하라고 선언
+    @Column(nullable = false) //null 허용 안함
+    @ColumnDefault("'LOCAL'") // 어노테이션으로 디폴트값 선언 방법 (문자열일 경우 ' ' 반드시 사용)
+    private OAuthProvider oAuthProvider;
+
     @Builder
     public User(Integer id, String username, String password, String email, Timestamp createdAt, String profileImage) {
         this.id = id;
@@ -94,15 +100,15 @@ public class User {
 
     // 해당 Role을 가지고 있는 여부 확인
     // boolean isAdmin = user.hasRole(Role.ADMIN);
-    public boolean hasRole(Role role){
+    public boolean hasRole(Role role) {
         // 1. 방어적 코드 작성
-        if (this.roles == null || this.roles.isEmpty()){
-           // Role (해당 유저에 대한 권한이) 자체가 설정 되지 않은 상태
+        if (this.roles == null || this.roles.isEmpty()) {
+            // Role (해당 유저에 대한 권한이) 자체가 설정 되지 않은 상태
             return false;
         }
 
-        for (UserRole userRole : this.roles){
-            if (userRole.getRole() == role){
+        for (UserRole userRole : this.roles) {
+            if (userRole.getRole() == role) {
                 return true;
             }
         }
@@ -110,13 +116,33 @@ public class User {
     }
 
     // 관리자 여부 확인 메서드 - 머스태치에서 is 생략하고 admin으로 접근 가능함
-    public boolean isAdmin(){
+    public boolean isAdmin() {
         return hasRole(Role.ADMIN);
     }
 
-    // 머스태치 화면에서 사용할 편의 메서드
-    public String getRoleDisplay(){
+    // 머스태치 화면에서 사용할 편의 메서드 1
+    public String getRoleDisplay() {
         //isAdmin()이 true 라면 "ADMIN" 반환 false라면 "USER"반환
         return isAdmin() ? "ADMIN" : "USER";
+    }
+
+    // 머스태치 화면에서 사용할 편의 메서드 2
+    //OAuthProvider 값에 따라서 경로 변수를 다르게 리턴
+    public String getProfilePath() {
+        if (this.profileImage == null) {
+            return null;
+        }
+        // 이미지 경로가 http로 시작 (소셜가입)
+        if (this.profileImage.startsWith("http")) {
+            return this.profileImage;
+        }
+        // 로컬 이미지(서버 기준 경로)
+        return "/images/" + this.profileImage;
+    }
+
+    // 머스태치 화면에서 사용할 편의 메서드 3
+    public boolean isLocal(){
+        // true -> 이메일 가입자를 의미함
+        return this.oAuthProvider == OAuthProvider.LOCAL;
     }
 }
