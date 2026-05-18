@@ -79,13 +79,31 @@ public class User {
         this.profileImage = profileImage;
     }
 
-
     // 편의 기능 추가 - 회원 정보 수정
-    public void update(UserRequest.UpdateDTO updateDTO, String newProfileImageFileName) {
-        this.password = updateDTO.getPassword();
-        this.profileImage = newProfileImageFileName;
-        // Dirty Checking 처리
+    public void update(UserRequest.UpdateDTO updateDTO) {
+        if (updateDTO.getPassword() != null) {
+            // 암호화 변경되어 들어 옴
+            this.password = updateDTO.getPassword();
+        }
+
+        if (updateDTO.getProfileImageFileName() != null) {
+            this.profileImage = updateDTO.getProfileImageFileName();
+        }
+
+
     }
+
+//    // 편의 기능 추가 - 회원 정보 수정
+//    public void update(UserRequest.UpdateDTO updateDTO, String newProfileImageFileName) {
+//        this.password = updateDTO.getPassword();
+//        this.profileImage = newProfileImageFileName;
+//        // Dirty Checking 처리
+//    }
+//
+//    // 패스워드 변경 시
+//    public void update(UserRequest.UpdateDTO updateDTO) {
+//        this.password = updateDTO.getPassword();
+//    }
 
     // User 엔티티에 권한 관련 편의 기능 만들어 보기
 
@@ -141,7 +159,7 @@ public class User {
     }
 
     // 머스태치 화면에서 사용할 편의 메서드 3
-    public boolean isLocal(){
+    public boolean isLocal() {
         // true -> 이메일 가입자를 의미함
         return this.oAuthProvider == OAuthProvider.LOCAL;
     }

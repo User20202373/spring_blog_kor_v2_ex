@@ -13,11 +13,11 @@ public class UserRequest {
 
         // 유효성 검사
         public void validate() {
-            if(username == null || username.trim().isEmpty()) {
+            if (username == null || username.trim().isEmpty()) {
                 throw new IllegalArgumentException("사용자명을 입력하세요");
             }
 
-            if(password == null || password.trim().isEmpty()) {
+            if (password == null || password.trim().isEmpty()) {
                 throw new IllegalArgumentException("비밀번호를 입력하세요");
             }
         }
@@ -53,15 +53,15 @@ public class UserRequest {
                 throw new IllegalArgumentException("사용자명은 필수 입니다");
             }
 
-            if(password == null || password.trim().isEmpty()) {
+            if (password == null || password.trim().isEmpty()) {
                 throw new IllegalArgumentException("비밀번호는 필수 입니다");
             }
 
-            if(email == null || email.trim().isEmpty()) {
+            if (email == null || email.trim().isEmpty()) {
                 throw new IllegalArgumentException("이메을은 필수 입니다");
             }
             // 입력값 : abc@naver.com --> contains() -->   true   --> ! --> false
-            if(email.contains("@") == false) {
+            if (email.contains("@") == false) {
                 throw new IllegalArgumentException("올바른 이메일 형식이 아닙니다");
             }
 
@@ -74,9 +74,10 @@ public class UserRequest {
 
         private String password;
         private MultipartFile profileImage;
+        private String profileImageFileName;
 
         public void validate() {
-            if(password == null || password.isBlank()) {
+            if (password == null || password.isBlank()) {
                 throw new IllegalArgumentException("비밀번호는 필수 입니다");
             }
             if (password.length() < 4) {
