@@ -18,7 +18,7 @@ repositories {
 }
 
 dependencies {
-	// 암호화
+	// 암호화 기능
 	implementation 'org.springframework.security:spring-security-crypto'
 
 	// Source: https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
