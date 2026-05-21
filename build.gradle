@@ -18,6 +18,8 @@ repositories {
 }
 
 dependencies {
+	// 이메일 발송 라이브러리
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	// 암호화 기능
 	implementation 'org.springframework.security:spring-security-crypto'
 

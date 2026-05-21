@@ -1,5 +1,6 @@
 package com.tenco.blog.user;
 
+import com.tenco.blog._core.errors.Exception400;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -86,6 +87,23 @@ public class UserRequest {
             }
             if (password.length() < 4) {
                 throw new IllegalArgumentException("비밀번호는 4자 이상이어야 합니다");
+            }
+        }
+    }
+
+
+    // 이메일 인증
+    @Data
+    public static class EmailCheckDTO {
+        private String email; // 이메일 주소
+        private String code; // 인증번호(번호 확인시 사용(
+
+        public void validate() {
+            if(email == null || email.trim().isEmpty()) {
+                throw new Exception400("이메일을 입력해주세요");
+            }
+            if(!email.contains("@")) {
+                throw new Exception400("올바른 이메일 형식이 아닙니다");
             }
         }
     }
