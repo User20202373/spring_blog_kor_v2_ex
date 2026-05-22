@@ -29,6 +29,9 @@ public class User {
     private String profileImage; // 프로필 이미지는 선택 사항(회원가입시)
 
     private String password;
+
+    // 이메일 중복 방지를 위한 유니크 제약 조건 설정
+    @Column(unique = true)
     private String email;
     // 엔티티가 영속화 될 때 자동으로 현재 시간을 주입해라 pc -> db
     @CreationTimestamp

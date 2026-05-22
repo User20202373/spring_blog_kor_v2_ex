@@ -25,7 +25,7 @@ public class UserRole {
 
     @Builder
     public UserRole( Integer id, Role role) {
-        // id는 Userrole 에 PK이다
+        // id는 UserRole 에 PK이다
         this.id = id;
         this.role = role;
     }

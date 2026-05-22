@@ -5,6 +5,7 @@ import com.tenco.blog._core.errors.Exception403;
 import com.tenco.blog._core.errors.Exception404;
 import com.tenco.blog._core.errors.Exception500;
 import com.tenco.blog._core.util.FileUtil;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +32,7 @@ import java.io.IOException;
 @Transactional(readOnly = true) // 기본적인 읽기 전용 트랜잭션 처리 , 조회시 더티 체킹 안 일어남
 public class UserService {
 
+    private final HttpSession session;
     private final UserRepository userRepository;
 
     //암호화 기능 DI
@@ -56,12 +58,27 @@ public class UserService {
     @Transactional
     public User 회원가입(UserRequest.JoinDTO joinDTO) {
         log.info("회원가입 서비스 시작");
-        // 회원 가입시 중복 체크
+
+        //[핵심] 이메일 인증 도장 확인
+        String verifiedEmail = (String) session.getAttribute("verified_email");
+        if(verifiedEmail == null || !verifiedEmail.equals(joinDTO.getEmail())) {
+            // 이메일 위변조를 방지하기 위해 인증번호 검증시 넣었던 그 이메일 진행 시켜야 한다
+            throw new Exception400("이메인 인증을 완료해주세요");
+        }
+
+        // 회원 가입시 아이디 중복 체크
         userRepository.findByUsername(joinDTO.getUsername()).ifPresent(
                 user -> {
                     log.warn("회원가입 실패 - 중복된 사용자명 : {}", user.getUsername());
                     throw new Exception400("이미 존재하는 사용자입니다");
                 });
+
+         userRepository.findByEmail(joinDTO.getEmail()).ifPresent(
+                 user -> {
+                     log.warn("회원가입 실패 - 중복된 이메일 : {}", user.getEmail());
+                     throw new Exception400("이미 존재하는 이메일입니다");
+                 });
+
 
         // 프로필 이미지 저장 구현
         String profileImageFilename = null;
@@ -80,11 +97,15 @@ public class UserService {
             }
         }
 
+
         //비밀번호 암호화 기능 추가
         User user = joinDTO.toEntity(profileImageFilename);
         String hashPwd = passwordEncoder.encode(joinDTO.getPassword());
         // 해쉬 처리한 비번 user에 넣기
         user.setPassword(hashPwd);
+
+        //[핵심] 이메일 인증 도장 삭제
+        session.removeAttribute("verified_email");
         return userRepository.save(user);
     }
 
