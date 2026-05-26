@@ -1,5 +1,7 @@
 package com.tenco.blog.user;
 
+import com.tenco.blog._core.errors.Exception400;
+import com.tenco.blog._core.errors.NotEnoughException;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
@@ -77,9 +79,16 @@ public class User {
     @ColumnDefault("'LOCAL'")
     private OAuthProvider oAuthProvider;
 
+
+    // 보유 포인트
+    @ColumnDefault("0") // 테이블 기준 기본값 설정
+    private Integer point = 0;
+
+
     @Builder
     public User(Integer id, String username, String password, String email, Timestamp createdAt,
-                String profileImage, OAuthProvider oAuthProvider, List<UserRole> roles) {
+                String profileImage, OAuthProvider oAuthProvider, List<UserRole> roles,
+                Integer point) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -89,6 +98,7 @@ public class User {
 
         this.oAuthProvider = (oAuthProvider != null) ? oAuthProvider : OAuthProvider.LOCAL;
 
+
         // 1. roles(ArrayList 타입)가 null이면 빈 리스트로 초기화(NPE 방지 처리)
         this.roles = (roles != null) ? roles : new ArrayList<>();
 
@@ -97,6 +107,10 @@ public class User {
             // new UserRole(Role.USER); 랑 빌더패턴이랑 같음
             this.roles.add(UserRole.builder().role(Role.USER).build());
         }
+
+        // point가 null 이면 기본값 0으로 설정
+        this.point = (point != null) ? point : 0;
+
 
     }
 
@@ -171,5 +185,24 @@ public class User {
     public boolean isLocal() {
         // true -> 이메일 가입자를 의미함
         return this.oAuthProvider == OAuthProvider.LOCAL;
+    }
+
+    // 포인트 관련 편의 메서드 추가
+
+    public void deductPoint(Integer amount) {
+        if (amount == null || amount <= 0) {
+            throw new Exception400("차감할 포인트는 0보다 커야합니다");
+        }
+        if (this.point < amount) {
+            throw new NotEnoughException("포인트가 부족합니다. 현재 포인트 :" + this.point);
+        }
+        this.point -= amount;
+    }
+
+    public void chargePoint(Integer amount) {
+        if (amount == null || amount <= 0) {
+            throw new Exception400("충전할 포인트는 0보다 커야합니다");
+        }
+        this.point += amount;
     }
 }

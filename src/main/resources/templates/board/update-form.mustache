@@ -18,6 +18,12 @@
                         {{board.content}}
                     </textarea>
                 </div>
+                <div class="mb-3">
+                    <!--      !board.premium 컬럼 추가시 주석 해제             -->
+                    <input type="checkbox" id="premium" name="premium" class="form-check-input"
+                         {{#board.premium}}checked{{/board.premium}} >
+                    <label for="premium" class="form-check-label">유료 게시글 등록(열람시 500포인트)</label>
+                </div>
                 <button class="btn btn-primary">글수정 완료</button>
             </form>
         </div>

@@ -61,7 +61,7 @@ public class UserService {
 
         //[핵심] 이메일 인증 도장 확인
         String verifiedEmail = (String) session.getAttribute("verified_email");
-        if(verifiedEmail == null || !verifiedEmail.equals(joinDTO.getEmail())) {
+        if (verifiedEmail == null || !verifiedEmail.equals(joinDTO.getEmail())) {
             // 이메일 위변조를 방지하기 위해 인증번호 검증시 넣었던 그 이메일 진행 시켜야 한다
             throw new Exception400("이메인 인증을 완료해주세요");
         }
@@ -73,11 +73,11 @@ public class UserService {
                     throw new Exception400("이미 존재하는 사용자입니다");
                 });
 
-         userRepository.findByEmail(joinDTO.getEmail()).ifPresent(
-                 user -> {
-                     log.warn("회원가입 실패 - 중복된 이메일 : {}", user.getEmail());
-                     throw new Exception400("이미 존재하는 이메일입니다");
-                 });
+        userRepository.findByEmail(joinDTO.getEmail()).ifPresent(
+                user -> {
+                    log.warn("회원가입 실패 - 중복된 이메일 : {}", user.getEmail());
+                    throw new Exception400("이미 존재하는 이메일입니다");
+                });
 
 
         // 프로필 이미지 저장 구현
@@ -341,7 +341,16 @@ public class UserService {
         return userEntity;
     }
 
+    @Transactional
+    public User 포인트충전(Integer id, Integer amount) {
+        // id값으로 db에 User 정보 조회부터 해야 함
+        User userEntity = userRepository.findById(id).orElseThrow(() ->
+                new Exception400("사용자를 찾을 수 없습니다"));
 
+        userEntity.chargePoint(amount);
+        //Controller 에 User를 반환하기 위해서 save 호출(신규저장, 수정 같이 동작됨)
+        return userRepository.save(userEntity);
+    }
 }
 
 
