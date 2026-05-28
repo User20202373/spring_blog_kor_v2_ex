@@ -35,6 +35,7 @@ public class PaymentResponse {
         }
     }
 
+    @Data
     public static class CompleteDTO{
         private Integer amount;
         private Integer currentPoint;

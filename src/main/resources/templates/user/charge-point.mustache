@@ -133,8 +133,16 @@
                     method: 'POST',
                     headers: {'Content-Type': 'application/json; charset=UTF-8;'},
                     body: JSON.stringify({paymentId: response.paymentId})
-
                 });
+                if(!completeRes.ok){
+                    alert('결제  겸증 및 포인트 충전에 실패했습니다');
+                }
+
+                const result = completeRes.json();
+                alert("충전이 완료되었습니다\n 충전된 금액");
+
+
+                location.href = "/user/detail";
 
             }catch(error){
                 alert(error.message);

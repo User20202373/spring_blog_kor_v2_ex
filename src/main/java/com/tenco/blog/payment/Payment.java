@@ -51,6 +51,7 @@ public class Payment {
     @CreationTimestamp
     private Timestamp createdAt;
 
+    @Builder
     public Payment(String paymentId, String pgTxId, User user, Integer amount, String status, Timestamp createdAt) {
         this.paymentId = paymentId;
         this.pgTxId = pgTxId;

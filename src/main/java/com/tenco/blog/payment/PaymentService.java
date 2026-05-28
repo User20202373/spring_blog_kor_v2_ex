@@ -5,6 +5,7 @@ import com.tenco.blog._core.errors.Exception404;
 import com.tenco.blog.user.User;
 import com.tenco.blog.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +20,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
@@ -70,6 +72,7 @@ public class PaymentService {
      * 포트원 결제 후, 프론트가 보낸 paymentId로 포트원 서버에 직접 조회(Server to Server)로
      * 서버에 한번 더 요청(위변조방지)
      */
+    @Transactional
     public PaymentResponse.CompleteDTO 결제검증후포인트충전(Integer userId, String paymentId) {
 
         // 1. 사전검증 (실제 사용자가 맞는지 (userId), paymentId DB 이미 존재 하는지 확인)
@@ -92,13 +95,26 @@ public class PaymentService {
         if (portOnePayment.getAmount() == null || portOnePayment.getAmount().getTotal() == null){
             throw new Exception400("결제 금액 정보를 확인할 수 없습니다");
         }
+
+        Integer amount = portOnePayment.getAmount().getTotal();
+
         // 4. 비즈니스 로직 처리 (결제한 금액만큼 --> 포인트 자동 충전)
-        userEntity.chargePoint(portOnePayment.getAmount().getTotal());
+        userEntity.chargePoint(amount);
 
         // 5. 결제 내역 저장 (insert 처리)
+        Payment payment = Payment.builder()
+                .paymentId(paymentId)
+                .pgTxId(portOnePayment.getPgTxId())
+                .user(userEntity)
+                .amount(amount)
+                .status("PAID")
+                .build();
+        paymentRepository.save(payment);
+        log.info("결제 확인 후 포인트 충전 완료: userId={}, paymentId={}, amount={}",
+                userId,paymentId,amount);
+        return new PaymentResponse.CompleteDTO(amount,userEntity.getPoint());
 
 
-        return null;
 
 
     }
@@ -120,9 +136,6 @@ public class PaymentService {
                 request,
                 PaymentResponse.PortOnePayment.class
         );
-
-        System.out.println("------------------------");
-        System.out.println(response.toString());
 
         return response.getBody();
     }

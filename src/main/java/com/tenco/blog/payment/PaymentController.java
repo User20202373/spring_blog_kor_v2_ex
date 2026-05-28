@@ -56,6 +56,9 @@ public class PaymentController {
         PaymentResponse.CompleteDTO completeDTO
                 = paymentService.결제검증후포인트충전(sessionUser.getId(), reqDTO.getPaymentId());
 
+        // 세션 동기화 처리
+        sessionUser.setPoint(completeDTO.getCurrentPoint());
+        session.setAttribute(Define.SESSION_USER,sessionUser);
         return ResponseEntity.ok().body(completeDTO);
 
     }
