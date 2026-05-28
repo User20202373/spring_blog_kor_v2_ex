@@ -19,3 +19,8 @@ oauth:
 
 tenco:
   key: ${TENCO_KEY}
+
+portone:
+  store-id: ${PORTONE_STORE_ID}
+  channel-key: ${PORTONE_CHANNEL_KEY}
+  api-secret: ${PORTONE_API_SECRET}

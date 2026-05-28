@@ -1,0 +1,150 @@
+{{> layout/header}}
+<div class="container p-5 flex-grow-1">
+    <div class="card">
+        <div class="card-header">
+            <h4>포인트충전</h4>
+        </div>
+        <div class="card-body">
+            <div>
+                <label class="form-label fw-bold">현재 보유 포인트</label>
+                <div class="mb-4">
+                    <span class="badge bg-primary fs-5">{{user.point}} P</span>
+                </div>
+            </div>
+            <hr>
+            <div class="mb-4">
+                <label class="form-label fw-bold mb-3">충전할 포인트 선택</label>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-outline-primary w-100 point-btn" data-amount="1000">
+                            1,000P
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-outline-primary w-100 point-btn" data-amount="5000">
+                            5,000P
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-outline-primary w-100 point-btn" data-amount="10000">
+                            10,000P
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-outline-primary w-100 point-btn" data-amount="20000">
+                            20,000P
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-outline-primary w-100 point-btn" data-amount="50000">
+                            50,000P
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-outline-primary w-100 point-btn" data-amount="100000">
+                            100,000P
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">충전 예정 금액</label>
+                <p class="form-control-plaintext">
+                    <span class="badge bg-success fs-4" id="selectedAmount">0</span> P
+                </p>
+            </div>
+            <div class="d-grid gap-2">
+                <button type="button" id="charge-btn" class="btn btn-primary" disabled>충전하기</button>
+                <a href="/user/detail" class="btn btn-secondary">취소</a>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
+<script>
+    <!-- DOM 로드가 완전히 되면 그다음 funtion() 수행 해!    -->
+    document.addEventListener("DOMContentLoaded", function(){
+        let selectedAmount = 0;
+
+        // 요소 준비
+         const btnList = document.querySelectorAll(".point-btn");
+        const displayAmount = document.querySelector("#selectedAmount");
+        const chargeBtn = document.querySelector("#charge-btn");
+
+        // 이벤트 리스너 등록
+        btnList.forEach(btn => {
+            // 각 버튼에 클릭 이벤트 리스너 등록 처리
+            btn.addEventListener('click',function() {
+                // btn에 class 속성 active 일단 전체 제거
+                btnList.forEach(b => b.classList.remove('active'));
+                // 선택된 btn class 속성 active 추가
+                this.classList.add('active');
+                selectedAmount = parseInt(this.getAttribute('data-amount'));
+                // displayAmount 선택된 금액으로 갱신
+                displayAmount.textContent = selectedAmount;
+                chargeBtn.disabled = false;
+
+            });
+        });
+
+        // 충전하기 버튼 3단계 통신처리 (실제 PG 사 결제 처리)
+        chargeBtn.addEventListener('click', async function() {
+            if(selectedAmount <= 0){
+                return;
+            }
+            // 충전요청  이벤트가 일어났을 때 사용자가 빠르게 두번 클릭시 방어코드
+            chargeBtn.disabled = true;
+
+            // 우리서버에 주문이라는 영수증을 생성해서 PG사에 결제 요청할 예정
+            try{
+                // 1. 사전 결제 처리 요청 생성(우리서버)
+             const prepareRes  = await fetch('/api/payment/prepare',{
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({amount: selectedAmount})
+                });
+                if(!prepareRes.ok){
+                    alert("결제 요청 실패");
+                }
+                const prepare = await prepareRes.json();
+                console.log(prepare);
+
+                const response = await PortOne.requestPayment({
+                // Store ID 설정
+                storeId: prepare.storeId,
+                // 채널 키 설정
+                channelKey: prepare.channelKey,
+                paymentId: prepare.paymentId,
+                orderName: "포인트 충전",
+                totalAmount: prepare.amount,
+                currency: "CURRENCY_KRW",
+                payMethod: "EASY_PAY",
+                });
+
+                if(response.code !== undefined && response.code !== null){
+                    alert("결제 실패\n" + response.message);
+                    return;
+                }
+
+                // 객체를 ---> 문자열 --> 직렬화
+                // 3단계 ---> 우리 서버에 요청 (검증)
+                const completeRes = await fetch('/api/payment/complete',{
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json; charset=UTF-8;'},
+                    body: JSON.stringify({paymentId: response.paymentId})
+
+                });
+
+            }catch(error){
+                alert(error.message);
+            }finally{
+                // 충전 버튼 다시 활성화 처리(오류 발생시)
+                chargeBtn.disabled = false;
+            }
+        });
+  });
+</script>
+
+{{> layout/footer}}
+

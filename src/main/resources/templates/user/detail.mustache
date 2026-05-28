@@ -53,49 +53,18 @@
                 <p class="form-control-plaintext">
                     <span id="pointDisplay">{{user.point}}</span>P
                 </p>
-                <div class="input-group" style="max-width: 350px">
-                    <input type="number" id="chargeAmount" class="form-control" value="1000">
-                    <button type="button" class="btn btn-outline-success" onclick="callChargeApi()">포인트 충전</button>
-                </div>
             </div>
-
-            <div class="mb-3">
-                <a href="/user/update-form" class="btn btn-primary">회원정보 수정</a>
+            <div class="d-flex flex-column gap-2">
+                <a href="/user/point/charge" class="btn btn-success">포인트 충전(PG)</a>
+                {{#user.local}}
+                    <a href="/user/update-form" class="btn btn-primary">회원정보 수정</a>
+                {{/user.local}}
                 <a href="/board/list" class="btn btn-secondary">게시글 목록</a>
             </div>
 
         </div>
     </div>
 </div>
-<script>
-    async function callChargeApi() {
-        let amount = Number(document.querySelector("#chargeAmount").value);
-        if(!amount || amount <= 0 ) {
-          alert('충전할 포인트를 올바르게 입력해주세요');
-          return;
-        }
 
-        try {
-            let response = await fetch("/api/point/charge", {
-                method: 'POST',
-                headers: {'Content-Type': "application/json; charset=UTF-8;"},
-                body: JSON.stringify({amount: amount})
-            });
-
-            if(!response.ok) {
-                alert("충전 실패");
-                console.log(response);
-            } else {
-              let result = await response.json();
-              // 충전된 금액을 다시 P 태그에 재 갱신 처리
-              document.querySelector("#pointDisplay").innerText = result.point;
-            }
-
-        } catch (e) {
-            console.log(e);
-            alert("포인트 충전 실패");
-        }
-    }
-</script>
 {{> layout/footer}}
 

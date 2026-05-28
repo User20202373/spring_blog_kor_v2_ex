@@ -28,19 +28,29 @@ public class UserController {
 
     private final UserService userService;
 
+    // 포인트 충전 화면 요청
+    @GetMapping("/user/point/charge")
+    public String chargePointPage(Model model, HttpSession session) {
+        User sessionUser = (User) session.getAttribute(Define.SESSION_USER);
+        model.addAttribute("user", sessionUser);
+
+        return "user/charge-point";
+
+    }
+
 
     // 1. 동의 항목 승인 이후 카카오 인가 서버에서 인가 코드가 리다이렉트 됨
     @GetMapping("/kakao-redirect")
     public String kakaoCallback(@RequestParam(name = "code") String code, HttpSession session) {
-       // 외부 통신을 할 때 예외처리 권장 사항 !
-       try {
-           User sessionUser = userService.카카오소셜로그인(code);
-           // 우리 서버 세션에 회원 정보 저장해야 로그인 처리 됨. 저장하는 코드 필요
-           session.setAttribute(Define.SESSION_USER, sessionUser);
-       } catch (Exception e) {
-           log.error("카카오 로그인 실패"+e.getMessage());
-           throw new Exception401("소셜 로그인 실패");
-       }
+        // 외부 통신을 할 때 예외처리 권장 사항 !
+        try {
+            User sessionUser = userService.카카오소셜로그인(code);
+            // 우리 서버 세션에 회원 정보 저장해야 로그인 처리 됨. 저장하는 코드 필요
+            session.setAttribute(Define.SESSION_USER, sessionUser);
+        } catch (Exception e) {
+            log.error("카카오 로그인 실패" + e.getMessage());
+            throw new Exception401("소셜 로그인 실패");
+        }
 
         return "redirect:/";
 
